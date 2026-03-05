@@ -1,5 +1,5 @@
 {
-  "name": "@zovo/webext-messaging",
+  "name": "@theluckystrike/webext-messaging",
   "version": "1.0.0",
   "description": "Promise-based typed message passing for Chrome extensions. Part of @zovo/webext.",
   "type": "module",
@@ -45,6 +45,9 @@
   "homepage": "https://github.com/theluckystrike/webext-messaging#readme",
   "bugs": {
     "url": "https://github.com/theluckystrike/webext-messaging/issues"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.37",
