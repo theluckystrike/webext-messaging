@@ -1,58 +1,24 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: '[Bug] '
+name: Bug Report
+about: Report a bug
+title: "[BUG] "
 labels: bug
 assignees: ''
 ---
 
-## Bug Description
+**Describe the bug**
+A clear and concise description of the bug.
 
-A clear and concise description of what the bug is.
+**To Reproduce**
+Steps to reproduce the behavior.
 
-## Steps to Reproduce
-
-1. Go to '...'
-2. Click on '...'
-3. See error
-
-## Expected Behavior
-
+**Expected behavior**
 A clear and concise description of what you expected to happen.
 
-## Actual Behavior
+**Environment**
+- Browser: [e.g. Chrome, Firefox]
+- Extension manifest version: [v2/v3]
+- Package version: [e.g. 1.0.0]
 
-What actually happened instead of the expected behavior.
-
-## Environment
-
-- OS: [e.g., macOS 14.0]
-- Node version: [e.g., v20.10.0]
-- pnpm version: [e.g., 8.15.0]
-- Browser: [e.g., Chrome 120]
-- Library version: [e.g., 1.0.0]
-
-## Code Sample
-
-```typescript
-// Include a minimal reproducible example
-import { createMessenger } from "@zovo/webext-messaging";
-
-type Messages = {
-  ping: { request: void; response: { pong: boolean } };
-};
-
-const msg = createMessenger<Messages>();
-
-// Your code here
-```
-
-## Error Message
-
-```
-Paste any error messages here
-```
-
-## Additional Context
-
+**Additional context**
 Add any other context about the problem here.
