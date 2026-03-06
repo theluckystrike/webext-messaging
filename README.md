@@ -1,46 +1,29 @@
-# @zovo/webext-messaging
+# @theluckystrike/webext-messaging
 
-Promise-based typed message passing for Chrome extensions. No more untyped callbacks.
+Type-safe, promise-based message passing for Chrome extensions. Define your message types once, get full TypeScript safety across background scripts, content scripts, popups, and extension pages.
 
-Part of [@zovo/webext](https://zovo.one).
 
-## Install
+INSTALL
 
-```bash
-npm install @zovo/webext-messaging
-# or
-pnpm add @zovo/webext-messaging
-```
+npm install @theluckystrike/webext-messaging
 
-## Quick Start
 
-### 1. Define your message map
+QUICK START
 
-```ts
-// messages.ts
-import type { MessageMap } from "@zovo/webext-messaging";
+Define your message map as a TypeScript type. Each key maps a request payload to a response payload.
 
-export type Messages = {
+type Messages = {
   getUser: { request: { id: number }; response: { name: string; email: string } };
   ping: { request: { ts: number }; response: { pong: true } };
   notify: { request: { text: string }; response: void };
 };
-```
 
-### 2. Create a messenger
+Create a messenger and start using it.
 
-```ts
-import { createMessenger } from "@zovo/webext-messaging";
-import type { Messages } from "./messages";
+// Background service worker
+import { createMessenger } from "@theluckystrike/webext-messaging";
 
-export const msg = createMessenger<Messages>();
-```
-
-### 3. Listen in the background
-
-```ts
-// background.ts
-import { msg } from "./messenger";
+const msg = createMessenger<Messages>();
 
 msg.onMessage({
   getUser: async ({ id }) => {
@@ -49,152 +32,85 @@ msg.onMessage({
   },
   ping: ({ ts }) => ({ pong: true }),
 });
-```
 
-### 4. Send from content script or popup
-
-```ts
-// content.ts
-import { msg } from "./messenger";
-
+// Content script or popup
+const msg = createMessenger<Messages>();
 const user = await msg.send("getUser", { id: 42 });
-console.log(user.name); // fully typed
-```
 
-### 5. Send to a specific tab (background -> content script)
+// Background to a specific tab
+await msg.sendTab({ tabId: 123 }, "notify", { text: "Hello" });
 
-```ts
-// background.ts
-const result = await msg.sendTab({ tabId: 123 }, "notify", { text: "Hello tab!" });
-```
 
-## API Reference
+API
 
-### Types
+createMessenger()
 
-#### `MessageMap`
+Returns a Messenger object with three methods.
 
-Base type for defining request/response pairs:
+  send(type, payload)           Sends a message via chrome.runtime.sendMessage.
+                                Use from content scripts, popups, or extension pages.
+                                Returns a Promise with the typed response.
 
-```ts
-type MyMessages = {
-  [type: string]: { request: unknown; response: unknown };
-};
-```
+  sendTab(options, type, payload)   Sends a message via chrome.tabs.sendMessage.
+                                    Use from background to reach content scripts.
+                                    Options take tabId (required) and frameId (optional).
 
-#### `Envelope<M, K>`
+  onMessage(handlers)           Registers a handler map. Each handler receives the
+                                request payload and a MessageSender object. Handlers
+                                can be sync or async. Returns an unsubscribe function.
 
-The wire format sent over `chrome.runtime` / `chrome.tabs` messaging:
 
-```ts
-{ type: K; payload: M[K]["request"] }
-```
+Lower-Level Functions
 
-#### `Handler<M, K>`
+If you prefer individual functions over the messenger object, these are also exported.
 
-Handler function signature — can return sync or async:
+  sendMessage(type, payload)              Same as messenger.send
+  sendTabMessage(options, type, payload)  Same as messenger.sendTab
+  onMessage(handlers)                     Same as messenger.onMessage
 
-```ts
-(payload: RequestOf<M, K>, sender: chrome.runtime.MessageSender) =>
-  ResponseOf<M, K> | Promise<ResponseOf<M, K>>;
-```
 
-#### `TabMessageOptions`
+Types
 
-```ts
-{ tabId: number; frameId?: number }
-```
+  MessageMap          Base type for defining your message contract
+  RequestOf<M, K>     Extracts the request type for a given message key
+  ResponseOf<M, K>    Extracts the response type for a given message key
+  Envelope<M, K>      The wire format sent over the Chrome messaging channel
+  Handler<M, K>       Function signature for a single message handler
+  HandlerMap<M>       Partial map of handlers keyed by message type
+  TabMessageOptions   Object with tabId and optional frameId
+  Messenger<M>        The object returned by createMessenger
 
-#### `MessagingError`
 
-Custom error class with `originalError` property. Wraps `chrome.runtime.lastError` into real thrown errors instead of silent failures.
+ERROR HANDLING
 
-### Functions
+When chrome.runtime.lastError is set after a message send, the library wraps it in a MessagingError and rejects the promise. MessagingError extends Error and exposes an originalError property with the underlying Chrome error.
 
-#### `createMessenger<M>()`
+  import { MessagingError } from "@theluckystrike/webext-messaging";
 
-Returns a `Messenger<M>` with typed `send`, `sendTab`, and `onMessage` methods. **This is the recommended API.**
-
-```ts
-const msg = createMessenger<MyMessages>();
-```
-
-#### `sendMessage<M, K>(type, payload)`
-
-Send a typed message via `chrome.runtime.sendMessage`. Use from content scripts or popups to reach the background service worker.
-
-```ts
-const response = await sendMessage<MyMessages, "ping">("ping", { ts: Date.now() });
-```
-
-#### `sendTabMessage<M, K>(options, type, payload)`
-
-Send a typed message to a specific tab via `chrome.tabs.sendMessage`. Use from background to reach content scripts.
-
-```ts
-const response = await sendTabMessage<MyMessages, "getUser">(
-  { tabId: 123, frameId: 0 },
-  "getUser",
-  { id: 1 },
-);
-```
-
-#### `onMessage<M>(handlers)`
-
-Register typed message handlers. Returns an unsubscribe function.
-
-- Sync and async handlers are both supported
-- Async handlers automatically keep the message channel open
-- Errors are caught, logged, and `undefined` is sent back (never silently swallowed)
-
-```ts
-const unsub = onMessage<MyMessages>({
-  ping: ({ ts }) => ({ pong: true }),
-  getUser: async ({ id }) => fetchUser(id),
-});
-
-// Later: unsub() to remove listeners
-```
-
-## Error Handling
-
-`@zovo/webext-messaging` wraps `chrome.runtime.lastError` into proper `MessagingError` exceptions:
-
-```ts
-import { MessagingError } from "@zovo/webext-messaging";
-
-try {
-  await msg.send("getUser", { id: 1 });
-} catch (err) {
-  if (err instanceof MessagingError) {
-    console.error(err.message);        // descriptive message with context
-    console.error(err.originalError);   // the underlying error, if any
+  try {
+    await msg.send("getUser", { id: 42 });
+  } catch (err) {
+    if (err instanceof MessagingError) {
+      console.error(err.message, err.originalError);
+    }
   }
-}
-```
 
-Handler errors (sync throws or async rejections) are caught, logged to console, and `undefined` is returned to the sender — they never crash your service worker.
 
-## Message Flow
+MESSAGE FLOW
 
-```
-Content Script / Popup                 Background Service Worker
-       │                                        │
-       │── msg.send("getUser", {id: 1}) ──────>│
-       │   (chrome.runtime.sendMessage)         │
-       │                                        │── handler({id: 1}, sender)
-       │                                        │   returns { name: "Alice" }
-       │<────────── { name: "Alice" } ──────────│
-       │                                        │
-       │                                        │── msg.sendTab({tabId}, "notify", {text})
-       │<── handler({text}, sender) ────────────│
-       │    (chrome.tabs.sendMessage)           │
-```
+Content scripts and popups use send() to reach the background service worker. The background uses sendTab() to reach content scripts in a specific tab. All communication is routed through chrome.runtime messaging.
 
-## License
+  Content Script  --send-->  Background  --sendTab-->  Content Script (tab)
+  Popup           --send-->  Background
+
+
+LICENSE
 
 MIT
 
----
 
-Built by [Zovo](https://zovo.one)
+ABOUT
+
+Part of the @zovo/webext toolkit. Built by theluckystrike at zovo.one, a studio for Chrome extensions and browser tools.
+
+https://github.com/theluckystrike/webext-messaging

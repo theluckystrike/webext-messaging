@@ -1,64 +1,42 @@
-# Contributing to webext-messaging
+# Contributing to @theluckystrike/webext-messaging
 
-Thank you for considering contributing to this project! We welcome all contributions, whether they are bug reports, feature requests, documentation improvements, or code changes.
+Thanks for your interest in contributing.
 
-## How to File Issues
 
-- Search existing issues before opening a new one to avoid duplicates.
-- Use the provided issue templates (Bug Report or Feature Request) when creating new issues.
-- Provide as much detail as possible to help us understand and reproduce the problem or evaluate the request.
+REPORTING ISSUES
 
-## Development Workflow
+Open an issue on GitHub. Include the browser, manifest version, package version, and steps to reproduce the problem. A minimal reproduction repo or code snippet helps a lot.
 
-1. **Fork** the repository on GitHub.
-2. **Clone** your fork locally:
-   ```bash
-   git clone https://github.com/<your-username>/webext-messaging.git
-   cd webext-messaging
-   ```
-3. **Create a branch** for your change:
-   ```bash
-   git checkout -b my-feature
-   ```
-4. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-5. **Make your changes** and ensure they follow the project's code style.
-6. **Run tests** to verify nothing is broken:
-   ```bash
-   npm test
-   ```
-7. **Commit** your changes with a clear, descriptive commit message.
-8. **Push** your branch to your fork:
-   ```bash
-   git push origin my-feature
-   ```
-9. **Open a Pull Request** against the `main` branch of this repository.
 
-## Pull Request Guidelines
+DEVELOPMENT WORKFLOW
 
-- Keep PRs focused on a single change or feature.
-- Include a clear description of what the PR does and why.
-- Add or update tests for any new functionality.
-- Update documentation if your change affects the public API.
-- Ensure all tests pass before requesting a review.
+Fork the repo and clone your fork locally.
 
-## Code Style
+  git clone https://github.com/YOUR_USERNAME/webext-messaging.git
+  cd webext-messaging
+  npm install
 
-- Write clean, readable TypeScript.
-- Follow existing conventions in the codebase.
-- Use meaningful variable and function names.
-- Add comments where the intent is not immediately obvious.
+Create a branch for your change.
 
-## Running Tests
+  git checkout -b my-change
 
-```bash
-npm test
-```
+Make your changes, then run the tests.
 
-All tests must pass before a pull request will be merged.
+  npm test
 
-## License
+Push your branch and open a pull request against main.
 
-By contributing, you agree that your contributions will be licensed under the same license as this project.
+
+CODE STYLE
+
+Write TypeScript with strict mode enabled. Keep functions small and focused. Add JSDoc comments for public API surface. Follow the patterns already in the codebase.
+
+
+TESTING
+
+Every new feature or bug fix should include a test. The test suite uses Vitest. Run npm test before submitting your PR.
+
+
+LICENSE
+
+By contributing, you agree that your contributions will be licensed under the MIT License.
