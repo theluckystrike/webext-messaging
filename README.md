@@ -7,11 +7,9 @@
 
 Type-safe, promise-based message passing for Chrome extensions. Define your message types once, get full TypeScript safety across background scripts, content scripts, popups, and extension pages.
 
-
 INSTALL
 
 npm install @theluckystrike/webext-messaging
-
 
 QUICK START
 
@@ -45,7 +43,6 @@ const user = await msg.send("getUser", { id: 42 });
 // Background to a specific tab
 await msg.sendTab({ tabId: 123 }, "notify", { text: "Hello" });
 
-
 API
 
 createMessenger()
@@ -64,7 +61,6 @@ Returns a Messenger object with three methods.
                                 request payload and a MessageSender object. Handlers
                                 can be sync or async. Returns an unsubscribe function.
 
-
 Lower-Level Functions
 
 If you prefer individual functions over the messenger object, these are also exported.
@@ -72,7 +68,6 @@ If you prefer individual functions over the messenger object, these are also exp
   sendMessage(type, payload)              Same as messenger.send
   sendTabMessage(options, type, payload)  Same as messenger.sendTab
   onMessage(handlers)                     Same as messenger.onMessage
-
 
 Types
 
@@ -84,7 +79,6 @@ Types
   HandlerMap<M>       Partial map of handlers keyed by message type
   TabMessageOptions   Object with tabId and optional frameId
   Messenger<M>        The object returned by createMessenger
-
 
 ERROR HANDLING
 
@@ -100,7 +94,6 @@ When chrome.runtime.lastError is set after a message send, the library wraps it 
     }
   }
 
-
 MESSAGE FLOW
 
 Content scripts and popups use send() to reach the background service worker. The background uses sendTab() to reach content scripts in a specific tab. All communication is routed through chrome.runtime messaging.
@@ -108,18 +101,15 @@ Content scripts and popups use send() to reach the background service worker. Th
   Content Script  --send-->  Background  --sendTab-->  Content Script (tab)
   Popup           --send-->  Background
 
-
 LICENSE
 
 MIT
-
 
 ABOUT
 
 Part of the @zovo/webext toolkit. Built by theluckystrike at zovo.one, a studio for Chrome extensions and browser tools.
 
 https://github.com/theluckystrike/webext-messaging
-
 
 Part of the **[Chrome Extension Toolkit](https://github.com/theluckystrike/chrome-extension-toolkit)** by theluckystrike. See all templates, packages, and guides at [github.com/theluckystrike/chrome-extension-toolkit](https://github.com/theluckystrike/chrome-extension-toolkit).
 
