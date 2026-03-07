@@ -1,3 +1,8 @@
+[![CI](https://github.com/theluckystrike/webext-messaging/actions/workflows/ci.yml/badge.svg)](https://github.com/theluckystrike/webext-messaging/actions)
+[![npm](https://img.shields.io/npm/v/@theluckystrike/webext-messaging)](https://www.npmjs.com/package/@theluckystrike/webext-messaging)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+
 # @theluckystrike/webext-messaging
 
 Type-safe, promise-based message passing for Chrome extensions. Define your message types once, get full TypeScript safety across background scripts, content scripts, popups, and extension pages.
@@ -117,3 +122,7 @@ https://github.com/theluckystrike/webext-messaging
 
 
 Part of the **[Chrome Extension Toolkit](https://github.com/theluckystrike/chrome-extension-toolkit)** by theluckystrike. See all templates, packages, and guides at [github.com/theluckystrike/chrome-extension-toolkit](https://github.com/theluckystrike/chrome-extension-toolkit).
+
+## License
+
+MIT
