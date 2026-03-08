@@ -30,11 +30,16 @@
   },
   "keywords": [
     "chrome-extension",
-    "webextension",
     "message-passing",
     "typed-messaging",
+    "typescript",
+    "webextension",
     "browser-extension",
-    "typescript"
+    "manifest-v3",
+    "chrome-runtime",
+    "sendMessage",
+    "promise",
+    "async"
   ],
   "author": "theluckystrike",
   "license": "MIT",

@@ -1,118 +1,110 @@
-[![CI](https://github.com/theluckystrike/webext-messaging/actions/workflows/ci.yml/badge.svg)](https://github.com/theluckystrike/webext-messaging/actions)
-[![npm](https://img.shields.io/npm/v/@theluckystrike/webext-messaging)](https://www.npmjs.com/package/@theluckystrike/webext-messaging)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+<div align="center">
 
 # @theluckystrike/webext-messaging
 
-Type-safe, promise-based message passing for Chrome extensions. Define your message types once, get full TypeScript safety across background scripts, content scripts, popups, and extension pages.
+Type-safe, promise-based message passing for Chrome extensions. Define your message types once, get full TypeScript inference across background scripts, content scripts, and popups.
 
-INSTALL
+[![npm version](https://img.shields.io/npm/v/@theluckystrike/webext-messaging)](https://www.npmjs.com/package/@theluckystrike/webext-messaging)
+[![npm downloads](https://img.shields.io/npm/dm/@theluckystrike/webext-messaging)](https://www.npmjs.com/package/@theluckystrike/webext-messaging)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/@theluckystrike/webext-messaging)
 
+[Installation](#installation) · [Quick Start](#quick-start) · [API](#api) · [License](#license)
+
+</div>
+
+---
+
+## Features
+
+- **Fully typed** -- define message contracts as TypeScript types
+- **Promise-based** -- async/await instead of callbacks
+- **Background + tab messaging** -- `send()` and `sendTab()` with typed payloads
+- **Handler map** -- register all handlers in one place with `onMessage()`
+- **Error handling** -- `MessagingError` wraps `chrome.runtime.lastError`
+- **Zero dependencies** -- just TypeScript and the Chrome API
+
+## Installation
+
+```bash
 npm install @theluckystrike/webext-messaging
+```
 
-QUICK START
+<details>
+<summary>Other package managers</summary>
 
-Define your message map as a TypeScript type. Each key maps a request payload to a response payload.
+```bash
+pnpm add @theluckystrike/webext-messaging
+# or
+yarn add @theluckystrike/webext-messaging
+```
+
+</details>
+
+## Quick Start
+
+```typescript
+import { createMessenger } from "@theluckystrike/webext-messaging";
 
 type Messages = {
-  getUser: { request: { id: number }; response: { name: string; email: string } };
+  getUser: { request: { id: number }; response: { name: string } };
   ping: { request: { ts: number }; response: { pong: true } };
-  notify: { request: { text: string }; response: void };
 };
-
-Create a messenger and start using it.
-
-// Background service worker
-import { createMessenger } from "@theluckystrike/webext-messaging";
 
 const msg = createMessenger<Messages>();
 
+// Background — register handlers
 msg.onMessage({
-  getUser: async ({ id }) => {
-    const user = await db.getUser(id);
-    return { name: user.name, email: user.email };
-  },
+  getUser: async ({ id }) => ({ name: "Alice" }),
   ping: ({ ts }) => ({ pong: true }),
 });
 
-// Content script or popup
-const msg = createMessenger<Messages>();
+// Content script or popup — send messages
 const user = await msg.send("getUser", { id: 42 });
+```
 
-// Background to a specific tab
-await msg.sendTab({ tabId: 123 }, "notify", { text: "Hello" });
+## API
 
-API
+| Method | Description |
+|--------|-------------|
+| `createMessenger<M>()` | Returns a typed `Messenger` with `send`, `sendTab`, and `onMessage` |
+| `send(type, payload)` | Send via `chrome.runtime.sendMessage` (content script / popup to background) |
+| `sendTab(opts, type, payload)` | Send via `chrome.tabs.sendMessage` (background to content script) |
+| `onMessage(handlers)` | Register a handler map. Returns an unsubscribe function |
 
-createMessenger()
 
-Returns a Messenger object with three methods.
 
-  send(type, payload)           Sends a message via chrome.runtime.sendMessage.
-                                Use from content scripts, popups, or extension pages.
-                                Returns a Promise with the typed response.
+## Part of @zovo/webext
 
-  sendTab(options, type, payload)   Sends a message via chrome.tabs.sendMessage.
-                                    Use from background to reach content scripts.
-                                    Options take tabId (required) and frameId (optional).
+This package is part of the [@zovo/webext](https://github.com/theluckystrike) family -- typed, modular utilities for Chrome extension development:
 
-  onMessage(handlers)           Registers a handler map. Each handler receives the
-                                request payload and a MessageSender object. Handlers
-                                can be sync or async. Returns an unsubscribe function.
+| Package | Description |
+|---------|-------------|
+| [webext-storage](https://github.com/theluckystrike/webext-storage) | Typed storage with schema validation |
+| [webext-messaging](https://github.com/theluckystrike/webext-messaging) | Type-safe message passing |
+| [webext-tabs](https://github.com/theluckystrike/webext-tabs) | Tab query helpers |
+| [webext-cookies](https://github.com/theluckystrike/webext-cookies) | Promise-based cookies API |
+| [webext-i18n](https://github.com/theluckystrike/webext-i18n) | Internationalization toolkit |
 
-Lower-Level Functions
+## Contributing
 
-If you prefer individual functions over the messenger object, these are also exported.
+Contributions are welcome! Please open an issue or submit a pull request.
 
-  sendMessage(type, payload)              Same as messenger.send
-  sendTabMessage(options, type, payload)  Same as messenger.sendTab
-  onMessage(handlers)                     Same as messenger.onMessage
-
-Types
-
-  MessageMap          Base type for defining your message contract
-  RequestOf<M, K>     Extracts the request type for a given message key
-  ResponseOf<M, K>    Extracts the response type for a given message key
-  Envelope<M, K>      The wire format sent over the Chrome messaging channel
-  Handler<M, K>       Function signature for a single message handler
-  HandlerMap<M>       Partial map of handlers keyed by message type
-  TabMessageOptions   Object with tabId and optional frameId
-  Messenger<M>        The object returned by createMessenger
-
-ERROR HANDLING
-
-When chrome.runtime.lastError is set after a message send, the library wraps it in a MessagingError and rejects the promise. MessagingError extends Error and exposes an originalError property with the underlying Chrome error.
-
-  import { MessagingError } from "@theluckystrike/webext-messaging";
-
-  try {
-    await msg.send("getUser", { id: 42 });
-  } catch (err) {
-    if (err instanceof MessagingError) {
-      console.error(err.message, err.originalError);
-    }
-  }
-
-MESSAGE FLOW
-
-Content scripts and popups use send() to reach the background service worker. The background uses sendTab() to reach content scripts in a specific tab. All communication is routed through chrome.runtime messaging.
-
-  Content Script  --send-->  Background  --sendTab-->  Content Script (tab)
-  Popup           --send-->  Background
-
-LICENSE
-
-MIT
-
-ABOUT
-
-Part of the @zovo/webext toolkit. Built by theluckystrike at zovo.one, a studio for Chrome extensions and browser tools.
-
-https://github.com/theluckystrike/webext-messaging
-
-Part of the **[Chrome Extension Toolkit](https://github.com/theluckystrike/chrome-extension-toolkit)** by theluckystrike. See all templates, packages, and guides at [github.com/theluckystrike/chrome-extension-toolkit](https://github.com/theluckystrike/chrome-extension-toolkit).
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT
+MIT License -- see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+Built by [theluckystrike](https://github.com/theluckystrike) · [zovo.one](https://zovo.one)
+
+</div>
